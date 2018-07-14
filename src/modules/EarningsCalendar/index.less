@@ -1,0 +1,108 @@
+.earningCalendar {
+    min-height: 80vh;
+}
+
+.countrySelectorBox {
+    width: 500px; // padding: 10px;
+}
+
+.countrySelectorContent {
+    .item {
+        margin-bottom: 10px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        .flag {
+            margin-right: 6px;
+        }
+
+    }
+}
+
+.countrySelectorBtn {
+    line-height: 32px;
+    float: right;
+    .item {
+        margin: 0 4px;
+        box-shadow: 1px 1px 5px 0 rgba(90, 90, 90, 0.5);
+    }
+}
+
+
+.countrySelectorControlBox{
+    float: left;
+    color: #1890ff;
+    span{
+        padding:0 5px;
+        cursor: pointer;
+    }
+    .all{
+        
+    }
+    .inverse{}
+}
+
+.countrySelectorComfirmBtn {
+    float: right;
+}
+
+.content {
+    >.date {
+        margin-top: 10px;
+        background-color: rgb(233, 233, 233);
+        line-height: 40px;
+        text-align: center;
+        font-weight: 600;
+    }
+    >.table {
+        table{
+            table-layout: fixed;
+        }
+        
+        .country{
+            text-align: center;
+        }
+        .code{
+        }
+        .name{
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            >.nameSpan{
+                color: #1890ff;
+                cursor: pointer;
+            }
+        }
+        .EPS {
+            text-align: center;
+        }
+        .revenue {
+            text-align: center;
+        }
+        
+        .value {
+            display: inline-block;
+            width: 60px;
+            text-align: right;
+            padding-right: 5px;
+        }
+        .slash {}
+        .forecast {
+            display: inline-block;
+            width: 60px;
+            text-align: left;
+            padding-left: 5px;
+        }
+
+
+        .marketcap{
+            text-align: center;
+        }
+        .reportTime{
+            text-align: center;
+            >img{
+                width:20px;
+            }
+        }
+    }
+}
