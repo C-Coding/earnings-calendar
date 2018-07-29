@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Spin } from 'antd';
 import moment from 'moment';
 
+import s from './index.less';
+
 import { MoneyFormat } from '@/utils/MoneyFormat.js';
 
 import { numFixed } from '@/utils/Num.js';
@@ -38,10 +40,15 @@ class Chart extends Component {
         this.dv = null//dataView实例
 
         this.kLineData = {}//用于缓存k线数据
+        this.currentKlineDate = null;//记录当前显示的kline 防止异步后kline被修改
 
         this.state = {
-            kLineLoading: true
+            kLineLoading: true,
+            kLineTip: false
         }
+
+
+
     }
 
 
@@ -69,8 +76,9 @@ class Chart extends Component {
         })
 
         mainChart.on('tooltip:change', ev => {//注册tooltip事件 动态改变kLine data
-            // console.log(ev.items[0].point._origin);
-            this.getkLineData(ev.items[0].point._origin.releaseDate);
+            const date = ev.items[0].point._origin.releaseDate;
+            this.currentKlineDate = date
+            this.getkLineData(date);
         });
 
         main.source([]);//导入一个空数据
@@ -161,6 +169,7 @@ class Chart extends Component {
             }
         })
 
+
         kLineChart.render();
     }
     shouldComponentUpdate(nextProps, nextState) {
@@ -250,11 +259,16 @@ class Chart extends Component {
 
     getkLineData(date) {
         if (this.kLineData.hasOwnProperty(date)) {//有字段
-
             if (this.kLineData[date]) {//有字段且存在有效值
+                if (this.kLineData[date].length === 0) {
+                    this.setState({
+                        kLineTip:true
+                    })
+                    return;
+                }
                 this.kLine.changeData(this.kLineData[date]);
                 return;
-            } else {//有字段 无有效值
+            } else {//有字段 无有效值 等待接口回调
                 return;
             }
         } else {//无字段 发送请求
@@ -265,6 +279,9 @@ class Chart extends Component {
                 kLineLoading: true
             })
             this.$api.historicalData(this.props.pairId, dateFrom, dateTo).then(d => {
+                this.setState({
+                    kLineLoading: false
+                })
                 if (d.data.code !== 0) {
                     return;
                 }
@@ -277,10 +294,15 @@ class Chart extends Component {
                     item.change = `${item.change}%`
                 })
                 this.kLineData[date] = d;
-                this.kLine.changeData(d)
-                this.setState({
-                    kLineLoading: false
-                })
+
+                if(d.length===0){
+                    this.setState({
+                        kLineTip:true
+                    })
+                }
+                if (this.currentKlineDate === date) {
+                    this.kLine.changeData(d)
+                }
             })
         }
     }
@@ -299,6 +321,11 @@ class Chart extends Component {
                 <div ref={this.sliderEl}></div>
                 <Spin size="large" spinning={this.state.kLineLoading}>
                     <div ref={this.kLineEl}></div>
+                    {
+                        this.state.kLineTip ? (
+                            <div className={`${s.kLineTip} fontTint`}>no data</div>
+                        ) : false
+                    }
                 </Spin>
             </div>
         )
@@ -371,7 +398,6 @@ function dataHandle(d) {
         let b = numFixed(range.revenue[0]) * numFixed(range.revenue[1]);
         switch (true) {
             case a <= 0 && b >= 0://eps符号不同  revenue符号相同
-                console.log(range.revenue[1]);
                 if (range.revenue[1] >= 0) {
                     range.revenue[0] = range.revenue[1] * range.EPS[0] / range.EPS[1];
                 } else {

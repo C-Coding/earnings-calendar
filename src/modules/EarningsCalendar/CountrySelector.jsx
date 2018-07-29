@@ -83,7 +83,9 @@ class CountrySelector extends PureComponent {
                     </div>
 
                     <Button className={s.countrySelectorComfirmBtn} type="primary" size="small" onClick={() => {
-                        this.props.countryComfirmFn(this.state.countryCheckedList)
+                        if (this.state.countryCheckedList.length !== 0) {
+                            this.props.countryComfirmFn(this.state.countryCheckedList)
+                        }
                     }} >确认</Button>
                 </div>
 

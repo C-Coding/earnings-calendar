@@ -1,10 +1,9 @@
 import axios from 'axios';
 
-
 if (process.env.NODE_ENV === 'development') {
     axios.defaults.baseURL = 'http://localhost:3000/api';
 }else{
-    axios.defaults.baseURL = 'http://47.98.177.214/api';
+    axios.defaults.baseURL = window.location.protocol==='https:'?'https://bird.ioliu.cn/v1?url=47.98.177.214/api':'http://47.98.177.214/api';
 }
 
 

@@ -13,15 +13,5 @@ PureComponent.prototype.$api=api;
 
 
 
-// Map.prototype.map=function(fn){
-//     let arr=[];
-//     this.forEach(function(value,key,map){
-//         arr.push(fn(value,key,map));
-//     })
-//     return arr;
-// }
-
-
-
 ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();

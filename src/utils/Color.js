@@ -1,19 +1,19 @@
 const redMax = [255, 0, 0];
-const redMin= [155,0,0];
+const redMin = [155, 0, 0];
 const greenMax = [0, 204, 0];
-const greenMin=[0,105,0];
+const greenMin = [0, 105, 0];
 
-const maxProp=0.1;
+const maxProp = 0.1;
 
 function EarningColor(value, forecast) {
-    if(forecast===null){
+    if (forecast === null) {
         return false;
     }
 
     if (forecast === 0) {
         if (value >= 0) {
             return red(value);
-        }else{
+        } else {
             return green(Math.abs(value));
         }
 
@@ -26,13 +26,14 @@ function EarningColor(value, forecast) {
             return red(Math.abs(value - forecast) / Math.abs(forecast));
         case value < forecast:
             return green(Math.abs(value - forecast) / Math.abs(forecast))
-
+        default:
+            break;
     }
 }
 
 
 function red(v) {
-    if(v>=maxProp){
+    if (v >= maxProp) {
         return rgb(redMax);
     }
     const r = (redMax[0] - redMin[0]) * v + redMin[0];
@@ -41,7 +42,7 @@ function red(v) {
     return `rgb(${r},${g},${b})`
 }
 function green(v) {
-    if(v>=maxProp){
+    if (v >= maxProp) {
         return rgb(greenMax);
     }
     const r = (greenMax[0] - greenMin[0]) * v + greenMin[0];
