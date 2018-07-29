@@ -4,6 +4,7 @@ import s from './index.less';
 import Chart from './Chart.jsx'
 import { MoneyFormat } from '@/utils/MoneyFormat.js';
 
+import { EarningColor } from '@/utils/Color.js';
 
 const TableCols = [//table列定义
     {
@@ -13,12 +14,12 @@ const TableCols = [//table列定义
         key: 'releaseDate',
         className: 'releaseDate'
     },
-    {
-        title: '截止日期',
-        dataIndex: 'periodEnd',
-        width: 60,
-        className: 'periodEnd'
-    },
+    // {
+    //     title: '截止日期',
+    //     dataIndex: 'periodEnd',
+    //     width: 60,
+    //     className: 'periodEnd'
+    // },
     {
         title: '每股收益/预测',
         width: 120,
@@ -26,7 +27,15 @@ const TableCols = [//table列定义
         key: 'EPS',
         render: (text, record) => (
             <div>
-                <span className={`${s.value} ${record.EPS ? '' : 'fontTint'}`}>{record.EPS || '--'}</span>
+                {
+                    record.EPS ?
+                        (
+                            <span className={s.value} style={{ color: EarningColor(record.EPS, record.EPSForecast) }}>{record.EPS}</span>
+                        ) :
+                        (
+                            <span className={`${s.value} fontTint`}>--</span>
+                        )
+                }
                 <span className={`${s.slash} ${record.EPS || record.EPSForecast ? '' : 'fontTint'}`}>/</span>
                 <span className={`${s.forecast} ${record.EPSForecast ? '' : 'fontTint'}`}>{record.EPSForecast || '--'}</span>
             </div>
@@ -39,7 +48,15 @@ const TableCols = [//table列定义
         className: s.revenue,
         render: (text, record) => (
             <div>
-                <span className={`${s.value} ${record.revenue ? '' : 'fontTint'}`}>{MoneyFormat(record.revenue) || '--'}</span>
+                {
+                    record.revenue ?
+                        (
+                            <span className={s.value} style={{ color: EarningColor(record.revenue, record.revenueForecast) }}>{MoneyFormat(record.revenue)}</span>
+                        ) :
+                        (
+                            <span className={`${s.value} 'fontTint'`}>--</span>
+                        )
+                }
                 <span className={`${s.slash} ${record.revenue || record.revenueForecast ? '' : 'fontTint'}`}>/</span>
                 <span className={`${s.forecast} ${record.revenueForecast ? '' : 'fontTint'}`}>{MoneyFormat(record.revenueForecast) || '--'}</span>
             </div>

@@ -48,9 +48,9 @@ class App extends PureComponent {
         })
     }
 
-    // tabChangeFn = (activeKey) => {//tab页change
-    //     this.setState({ activeKey });
-    // }
+    tabChangeFn = (activeKey) => {//tab页change
+        this.setState({ activeKey });
+    }
 
     tabEditFn = (targetKey, action) => {
         if (action === 'remove') {//tab执行删除

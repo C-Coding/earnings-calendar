@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 
 import Options from '@/components/Options/index.jsx';
-
+import FlagIcon from '@/components/FlagIcon'
 import { Input, Icon, Spin } from 'antd'
 
 import s from './index.less';
@@ -46,6 +46,12 @@ class Search extends PureComponent {
                 searchLoading: true
             })
             this.$api.search(text).then(d => {
+                if (this.state.searchText !== text) {
+                    this.setState({
+                        searchLoading: false
+                    })
+                    return;
+                }
                 if (d.data.code !== 0) {
                     return;
                 }
@@ -105,7 +111,7 @@ class Search extends PureComponent {
                                 this.setState({
                                     searchResult: []
                                 })
-                            }, 100)
+                            }, 200)
                         }}
                     />
                     <Spin indicator={<Icon type="loading" spin />} className={s.loading} spinning={this.state.searchLoading} />
@@ -119,13 +125,20 @@ class Search extends PureComponent {
                     keyName={'pairId'}
                     render={(item) => {
                         return (
-                            <div onClick={() => {
-                                this.props.stockSelectedFn(item.pairId, item.name);
-                                this.setState({
-                                    searchText: item.name,
-                                    searchResult: []
-                                })
-                            }} >{item.name}</div>
+                            <div className={s.option}
+                                onClick={() => {
+                                    this.props.stockSelectedFn(item.pairId, item.name);
+                                    this.setState({
+                                        searchText: item.name,
+                                        searchResult: []
+                                    })
+                                }} >
+                                <span className={`fontGray ${s.code}`}>{item.code}</span>
+                                <span className={s.name}>{item.name}</span>
+                                <span className={s.flag}>
+                                    <FlagIcon className={s.flag} code={item.countryCode} />
+                                </span>
+                            </div>
                         )
                     }}
                 />

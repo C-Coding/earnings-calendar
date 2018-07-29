@@ -47,6 +47,7 @@ export default function (Shape) {
                     y1: points[0].y,
                     x2: points[1].x,
                     y2: points[1].y,
+                    lineWidth: 2,
                     stroke: cfg.color
                 }
             });
@@ -102,6 +103,7 @@ export default function (Shape) {
                     y1: points[0].y,
                     x2: points[1].x,
                     y2: points[1].y,
+                    lineWidth: 2,
                     stroke: cfg.color
                 }
             });

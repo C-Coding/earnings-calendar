@@ -1,5 +1,14 @@
 import axios from 'axios';
-axios.defaults.baseURL = 'http://localhost:3000/api';
+
+
+if (process.env.NODE_ENV === 'development') {
+    axios.defaults.baseURL = 'http://localhost:3000/api';
+}else{
+    axios.defaults.baseURL = 'http://47.98.177.214/api';
+}
+
+
+
 // axios.defaults.headers.common['Authorization'] = '';
 axios.defaults.headers.post['Content-Type'] = 'application/json; charset=utf-8';
 
@@ -39,9 +48,9 @@ export default {
             }
         })
     },
-    historicalData(pairId,dateFrom,dateTo){
-        return axios.get('historicalData',{
-            params:{
+    historicalData(pairId, dateFrom, dateTo) {
+        return axios.get('historicalData', {
+            params: {
                 pairId,
                 dateFrom,
                 dateTo

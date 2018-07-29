@@ -13,9 +13,9 @@ const CheckboxGroup = Checkbox.Group;
 
 class CountrySelector extends PureComponent {
     constructor(props) {
-        super();
+        super(props);
         this.state = {
-            countryCheckedList: [CountryList[0], CountryList[1], CountryList[2]],//国家选择器选择列表
+            countryCheckedList: this.props.countryComfirmList//国家选择器选择列表
 
         }
     }
@@ -53,7 +53,7 @@ class CountrySelector extends PureComponent {
     render() {
         return (
             <div className={`${s.countrySelectorBox}`}>
-                <CheckboxGroup defaultValue={this.state.countryCheckedList} className={s.countrySelectorContent} value={this.state.countryCheckedList} onChange={(arr) => {
+                <CheckboxGroup value={this.state.countryCheckedList} className={s.countrySelectorContent} onChange={(arr) => {
                     this.setState({
                         countryCheckedList: arr
                     })

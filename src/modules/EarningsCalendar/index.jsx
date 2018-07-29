@@ -1,17 +1,15 @@
 import React, { PureComponent } from 'react';
 import moment from 'moment';
-import { Popover,Icon, DatePicker, Spin, Alert } from 'antd';
+import { Popover, Icon, DatePicker, Spin, Alert } from 'antd';
 
-import FlagIcon from '@/components/FlagIcon'
+import FlagIcon from '@/components/FlagIcon/index.jsx'
 import TableData from './TableData.jsx';
 
 import CountrySelector from './CountrySelector.jsx';
 
 import s from './index.less';
 
-
-import CountryList from '@/lib/CountryList.json';
-
+import { CountryList, CountryObj } from '@/lib/CountryMap.js';
 
 const { RangePicker } = DatePicker;
 
@@ -23,6 +21,17 @@ class EarningsCalendar extends PureComponent {
     constructor(props) {
         super(props);
 
+        let countryComfirmList;
+        try {
+            countryComfirmList = JSON.parse(window.localStorage.countryComfirmList).map(
+                function (item) { return CountryObj[item] }
+            );
+        } catch (error) {
+            delete window.localStorage.countryComfirmList;
+            countryComfirmList = [CountryList[0], CountryList[1], CountryList[2]];
+        }
+
+
         this.state = {
             loading: true,
             data: [],//财报日历数据
@@ -31,7 +40,7 @@ class EarningsCalendar extends PureComponent {
             datePickerOpen: false,//日期选择器是否显示
             datePickerError: null,//日期选择器错误提示
 
-            countryComfirmList: [CountryList[0], CountryList[1], CountryList[2]]//默认选中国家
+            countryComfirmList //默认选中国家
         }
     }
     componentDidMount() {
@@ -74,7 +83,8 @@ class EarningsCalendar extends PureComponent {
         } else {
             this.setState({
                 datePickerError: null,
-                datePicker: v
+                datePicker: v,
+                loading:true
             }, () => {
                 this.getData(v[0], v[1], this.state.countryComfirmList)
             });
@@ -96,6 +106,7 @@ class EarningsCalendar extends PureComponent {
             countryCheckedShow: false,
             countryComfirmList
         });
+        window.localStorage.countryComfirmList = JSON.stringify(countryComfirmList.map(function (item) { return item.id }));
     }
 
     render() {
@@ -130,7 +141,7 @@ class EarningsCalendar extends PureComponent {
                         })
                     }}
                     visible={this.state.countryCheckedShow}
-                    content={<CountrySelector countryComfirmFn={this.countryComfirmFn} />}
+                    content={<CountrySelector countryComfirmList={this.state.countryComfirmList} countryComfirmFn={this.countryComfirmFn} />}
                 >
                     <div className={s.countrySelectorBtn}>
 

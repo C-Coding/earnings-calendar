@@ -109,6 +109,7 @@
   "devDependencies": {
     "babel-plugin-import": "^1.7.0",
     "less": "^3.0.4",
-    "less-loader": "^4.1.0"
+    "less-loader": "^4.1.0",
+    "webpack-bundle-analyzer": "^2.13.1"
   }
 }

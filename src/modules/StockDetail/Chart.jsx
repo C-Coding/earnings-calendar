@@ -77,11 +77,12 @@ class Chart extends Component {
 
         main.axis('EPSForecast', false);//不显示EPSForecast数据坐标
         main.axis('revenueForecast', false);//不显示revenueForecast数据坐标
+        main.tooltip('预计每股收益*每股收益')
 
         main.interval().position('releaseDateTimestamp*EPS').color('#3399CC').shape('eps')
-        main.interval().position('releaseDateTimestamp*EPSForecast').color('#3399CC').shape('epsForecast')
+        main.interval().position('releaseDateTimestamp*EPSForecast').color('rgba(0,0,0,.65)').shape('epsForecast')
         main.interval().position('releaseDateTimestamp*revenue').color('red').shape('revenueShape')
-        main.interval().position('releaseDateTimestamp*revenueForecast').color('black').shape('revenueForcast')
+        main.interval().position('releaseDateTimestamp*revenueForecast').color('rgba(0,0,0,.65)').shape('revenueForcast')
 
 
         mainChart.render();//渲染
@@ -129,13 +130,37 @@ class Chart extends Component {
             end: { x: 1, y: 1 }
         })
         kLine.scale({
+            open: {
+                alias: '开盘'
+            },
+            price: {
+                alias: '收盘'
+            },
+            high: {
+                alias: '最高'
+            },
+            low: {
+                alias: '最低'
+            },
+            change: {
+                alias: '涨幅'
+            },
             date: {
                 type: 'timeCat',
                 mask: 'YY年MM月DD日'
             }
         })
         kLine.source([]);
-        this.kLine.schema().position('date*range').shape('candle')
+        kLine.schema().position('date*range').shape('candle').tooltip('open*high*low*price*change').color('trend', function (val) {
+            if (val === '上涨') {
+                return '#f04864';
+            }
+
+            if (val === '下跌') {
+                return '#2fc25b';
+            }
+        })
+
         kLineChart.render();
     }
     shouldComponentUpdate(nextProps, nextState) {
@@ -244,11 +269,12 @@ class Chart extends Component {
                     return;
                 }
                 d = d.data.data;
-                d = d.map(function (item) {
-                    return {
-                        date: new Date(item.date).getTime(),
-                        range: [item.open, item.price, item.high, item.low]
-                    }
+
+                d.forEach(function (item) {
+                    item.date = new Date(item.date).getTime();
+                    item.range = [item.open, item.price, item.high, item.low]
+                    item.trend = item.change >= 0 ? '上涨' : '下跌'
+                    item.change = `${item.change}%`
                 })
                 this.kLineData[date] = d;
                 this.kLine.changeData(d)

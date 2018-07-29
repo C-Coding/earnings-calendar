@@ -4,6 +4,8 @@ import s from './index.less';
 import moment from 'moment'
 import { MoneyFormat } from '@/utils/MoneyFormat.js';
 
+import { EarningColor } from '@/utils/Color.js';
+
 const TableCols = [
     {
         title: '国家',
@@ -19,7 +21,7 @@ const TableCols = [
     },
     {
         title: '代号',
-        width: 70,
+        width: 80,
         dataIndex: 'code',
         className: s.code
     },
@@ -31,29 +33,46 @@ const TableCols = [
     },
     {
         title: '每股收益/预测',
-        width: 160,
+        width: 150,
         key: 'EPS',
         className: s.EPS,
         render: (text, record) => {
             return (
                 <div>
-                    <span className={`${s.value} ${record.EPS?'':'fontTint'}`}>{record.EPS || '--'}</span>
-                    <span className={`${s.slash} ${record.EPS||record.EPSForecast?'':'fontTint'}`}>/</span>
-                    <span className={`${s.forecast} ${record.EPSForecast?'':'fontTint'}`}>{record.EPSForecast || '--'}</span>
+                    {
+                        record.EPS ?
+                            (
+                                <span className={s.value} style={{ color: EarningColor(record.EPS, record.EPSForecast) }}>{record.EPS}</span>
+                            ) :
+                            (
+                                <span className={`${s.value} fontTint`}>--</span>
+                            )
+                    }
+                    <span className={`${s.slash} ${record.EPS || record.EPSForecast ? '' : 'fontTint'}`}>/</span>
+                    <span className={`${s.forecast} ${record.EPSForecast ? '' : 'fontTint'}`}>{record.EPSForecast || '--'}</span>
                 </div>
             )
         },
     },
     {
         title: '总收益/预测',
-        width: 160,
+        width: 150,
         key: 'revenue',
         className: s.revenue,
         render: (text, record) => (
             <div>
-                <span className={`${s.value} ${record.revenue?'':'fontTint'}`}>{MoneyFormat(record.revenue) || '--'}</span>
-                <span className={`${s.slash} ${record.revenue||record.revenueForecast?'':'fontTint'}`}>/</span>
-                <span className={`${s.forecast} ${record.revenueForecast?'':'fontTint'}`}>{MoneyFormat(record.revenueForecast) || '--'}</span>
+                {
+                    record.revenue ?
+                        (
+                            <span className={s.value} style={{ color: EarningColor(record.revenue, record.revenueForecast) }}>{MoneyFormat(record.revenue)}</span>
+                        ) :
+                        (
+                            <span className={`${s.value} 'fontTint'`}>--</span>
+                        )
+                }
+
+                <span className={`${s.slash} ${record.revenue || record.revenueForecast ? '' : 'fontTint'}`}>/</span>
+                <span className={`${s.forecast} ${record.revenueForecast ? '' : 'fontTint'}`}>{MoneyFormat(record.revenueForecast) || '--'}</span>
             </div>
         )
     },
@@ -93,14 +112,14 @@ class TableData extends PureComponent {
     render() {
         TableCols[2].render = (text, record) => (
             <span className={s.nameSpan} onClick={() => {
-                this.props.stockSelectedFn(String(record.pairId),record.name)
+                this.props.stockSelectedFn(String(record.pairId), record.name)
             }}>{text}</span>
         )
         return this.props.data.map((item, i) => {
-            if(item.date===moment().format('YYYY-MM-DD')){
-                item.date='今天';
-            }else if(item.date===moment().subtract(1,'days').format('YYYY-MM-DD')){
-                item.date='昨天';
+            if (item.date === moment().format('YYYY-MM-DD')) {
+                item.date = '今天';
+            } else if (item.date === moment().subtract(1, 'days').format('YYYY-MM-DD')) {
+                item.date = '昨天';
             }
             return (
                 <div key={item.date} className={`${s.content} fontBlack`}>
