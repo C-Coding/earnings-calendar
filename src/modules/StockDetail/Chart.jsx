@@ -77,7 +77,7 @@ class Chart extends Component {
 
         mainChart.on('tooltip:change', ev => {//注册tooltip事件 动态改变kLine data
             const date = ev.items[0].point._origin.releaseDate;
-            this.currentKlineDate = date
+
             this.getkLineData(date);
         });
 
@@ -132,6 +132,13 @@ class Chart extends Component {
             forceFit: true,
             height: 300,
             padding: [60, 100]
+        });
+
+        kLineChart.tooltip({
+            crosshairs: {
+                type: 'rect',
+            }
+
         });
         const kLine = this.kLine = kLineChart.view({
             start: { x: 0, y: 0 },
@@ -258,11 +265,12 @@ class Chart extends Component {
 
 
     getkLineData(date) {
+        this.currentKlineDate = date;
         if (this.kLineData.hasOwnProperty(date)) {//有字段
             if (this.kLineData[date]) {//有字段且存在有效值
                 if (this.kLineData[date].length === 0) {
                     this.setState({
-                        kLineTip:true
+                        kLineTip: true
                     })
                     return;
                 }
@@ -295,13 +303,14 @@ class Chart extends Component {
                 })
                 this.kLineData[date] = d;
 
-                if(d.length===0){
-                    this.setState({
-                        kLineTip:true
-                    })
-                }
+
                 if (this.currentKlineDate === date) {
                     this.kLine.changeData(d)
+                    if (d.length === 0) {
+                        this.setState({
+                            kLineTip: true
+                        })
+                    }
                 }
             })
         }

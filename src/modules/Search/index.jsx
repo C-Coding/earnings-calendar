@@ -107,11 +107,9 @@ class Search extends PureComponent {
                         placeholder="请输入您要查询的股票名称或代码"
                         onKeyDown={this.searchResultSelectFn}
                         onBlur={() => {
-                            setTimeout(() => {
-                                this.setState({
-                                    searchResult: []
-                                })
-                            }, 200)
+                            this.setState({
+                                searchResult: []
+                            })
                         }}
                     />
                     <Spin indicator={<Icon type="loading" spin />} className={s.loading} spinning={this.state.searchLoading} />
@@ -126,7 +124,7 @@ class Search extends PureComponent {
                     render={(item) => {
                         return (
                             <div className={s.option}
-                                onClick={() => {
+                                onMouseDown={() => {
                                     this.props.stockSelectedFn(item.pairId, item.name);
                                     this.setState({
                                         searchText: item.name,

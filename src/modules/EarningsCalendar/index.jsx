@@ -57,16 +57,15 @@ class EarningsCalendar extends PureComponent {
     getData(dateFrom, dateTo, countryComfirmList) {//获取数据
         this.setState({
             loading: true
-        }, () => {
-            this.$api.earningsCalendar(
-                dateFrom.format('YYYY-MM-DD'),
-                dateTo.format('YYYY-MM-DD'),
-                countryComfirmList.map(function (item) { return item.id })
-            ).then(d => {
-                this.setState({
-                    loading: false,
-                    data: d.data.data
-                })
+        })
+        this.$api.earningsCalendar(
+            dateFrom.format('YYYY-MM-DD'),
+            dateTo.format('YYYY-MM-DD'),
+            countryComfirmList.map(function (item) { return item.id })
+        ).then(d => {
+            this.setState({
+                loading: false,
+                data: d.data.data
             })
         })
 
@@ -84,10 +83,12 @@ class EarningsCalendar extends PureComponent {
             this.setState({
                 datePickerError: null,
                 datePicker: v,
-                loading:true
-            }, () => {
-                this.getData(v[0], v[1], this.state.countryComfirmList)
+                loading: true
             });
+
+            setTimeout(() => {
+                this.getData(v[0], v[1], this.state.countryComfirmList)
+            }, 600);
         }
     }
     datePickerOpenChange = (status) => {//日期选择器显示change
@@ -111,59 +112,58 @@ class EarningsCalendar extends PureComponent {
 
     render() {
         return (
-            <Spin className={s.earningCalendar} size="large" spinning={this.state.loading}>
-
-                <RangePicker
-                    allowClear={false}
-                    defaultValue={this.state.datePicker}
-                    open={this.state.datePickerOpen}
-                    onChange={this.datePickerChangeFn}
-                    onOpenChange={this.datePickerOpenChange}
-                    renderExtraFooter={() => {
-                        let msg = this.state.datePickerError;
-                        if (msg) {
-                            return (
-                                <Alert className={s.datePickerAlert} message={msg} type="warning" showIcon />
-                            )
-                        } else {
-                            return null
-                        }
-                    }}
-                />
-
-
-                <Popover
-                    placement="bottomRight"
-                    title="请选择您需要查看财报的地区"
-                    onVisibleChange={(status) => {
-                        this.setState({
-                            countryCheckedShow: status
-                        })
-                    }}
-                    visible={this.state.countryCheckedShow}
-                    content={<CountrySelector countryComfirmList={this.state.countryComfirmList} countryComfirmFn={this.countryComfirmFn} />}
-                >
-                    <div className={s.countrySelectorBtn}>
-
-                        {this.state.countryComfirmList.map(function (item, index) {
-                            if (index <= 3) {
+            <Spin size="large" spinning={this.state.loading}>
+                <div className={s.earningsCalendar}>
+                    <RangePicker
+                        allowClear={false}
+                        defaultValue={this.state.datePicker}
+                        open={this.state.datePickerOpen}
+                        onChange={this.datePickerChangeFn}
+                        onOpenChange={this.datePickerOpenChange}
+                        renderExtraFooter={() => {
+                            let msg = this.state.datePickerError;
+                            if (msg) {
                                 return (
-                                    <FlagIcon key={item.id} className={s.item} code={item.code} />
+                                    <Alert className={s.datePickerAlert} message={msg} type="warning" showIcon />
                                 )
-                            } else if (index === 4) {
-                                return (<span key={'more'}>...</span>)
                             } else {
-                                return null;
+                                return null
                             }
-                        })}
-                        <Icon type="down" />
-                    </div>
-                </Popover>
+                        }}
+                    />
 
 
+                    <Popover
+                        placement="bottomRight"
+                        title="请选择您需要查看财报的地区"
+                        onVisibleChange={(status) => {
+                            this.setState({
+                                countryCheckedShow: status
+                            })
+                        }}
+                        visible={this.state.countryCheckedShow}
+                        content={<CountrySelector countryComfirmList={this.state.countryComfirmList} countryComfirmFn={this.countryComfirmFn} />}
+                    >
+                        <div className={s.countrySelectorBtn}>
+
+                            {this.state.countryComfirmList.map(function (item, index) {
+                                if (index <= 3) {
+                                    return (
+                                        <FlagIcon key={item.id} className={s.item} code={item.code} />
+                                    )
+                                } else if (index === 4) {
+                                    return (<span key={'more'}>...</span>)
+                                } else {
+                                    return null;
+                                }
+                            })}
+                            <Icon type="down" />
+                        </div>
+                    </Popover>
 
 
-                <TableData data={this.state.data} stockSelectedFn={this.props.stockSelectedFn} />
+                    <TableData data={this.state.data} stockSelectedFn={this.props.stockSelectedFn} />
+                </div>
             </Spin>
         )
     }
