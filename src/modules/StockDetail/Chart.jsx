@@ -272,9 +272,20 @@ class Chart extends Component {
                     this.setState({
                         kLineTip: true
                     })
-                    return;
+                } else {
+                    this.setState({
+                        kLineTip: false
+                    })
                 }
                 this.kLine.changeData(this.kLineData[date]);
+
+
+                // this.kLine.guide().region({
+                //     start: [new Date(date).getTime()-(12*60*60*1000), 'min'],
+                //     end: [new Date(date).getTime()+(12*60*60*1000), 'max']
+                // });
+
+
                 return;
             } else {//有字段 无有效值 等待接口回调
                 return;
