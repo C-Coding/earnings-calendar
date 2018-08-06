@@ -306,12 +306,29 @@ class Chart extends Component {
                 }
                 d = d.data.data;
 
+
+
+
+
                 d.forEach(function (item) {
                     item.date = new Date(item.date).getTime();
                     item.range = [item.open, item.price, item.high, item.low]
                     item.trend = item.change >= 0 ? '上涨' : '下跌'
                     item.change = `${item.change}%`
                 })
+
+                if (d.length > 0 && d.length < 15) {
+                    do {
+                        d.push({
+                            date: new Date(d[d.length-1].date+(24*60*60*1000)).getTime()
+                        });
+                        if (d.length === 13) {
+                            break;
+                        }
+                    } while (true);
+                }
+
+
                 this.kLineData[date] = d;
 
 

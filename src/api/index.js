@@ -7,7 +7,6 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 
-
 // axios.defaults.headers.common['Authorization'] = '';
 axios.defaults.headers.post['Content-Type'] = 'application/json; charset=utf-8';
 
