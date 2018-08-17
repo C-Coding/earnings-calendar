@@ -316,13 +316,12 @@ class Chart extends Component {
                     item.trend = item.change >= 0 ? '上涨' : '下跌'
                     item.change = `${item.change}%`
                 })
-
                 if (d.length > 0 && d.length < 15) {
                     do {
                         d.push({
                             date: new Date(d[d.length-1].date+(24*60*60*1000)).getTime()
                         });
-                        if (d.length === 13) {
+                        if (d.length === 15) {
                             break;
                         }
                     } while (true);
