@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { Spin } from 'antd';
 import moment from 'moment';
 
@@ -16,35 +16,40 @@ const DataSet = window.DataSet;
 const Slider = window.Slider;
 const Shape = G2.Shape;
 
-//自定义shape
+//注册自定义shape
 ChartShapeRegister(Shape);
 
 
 
 
 
-class Chart extends Component {
+class Chart extends PureComponent {
     constructor(props) {//props 传入data pairId
         super(props);
 
-        this.chartEl = React.createRef();//图表div
-        this.sliderEl = React.createRef();//数据选择div
-        this.kLineEl = React.createRef();//历史数据图表div
+        this.chartEl = React.createRef();//图表dom节点
+        this.sliderEl = React.createRef();//数据选择dom节点
+        this.kLineEl = React.createRef();//历史数据图表dom节点
 
-        this.chart = null;//chart实例
-        this.main = null;//view实例
+        this.kLineTipEl = React.createRef();
+
+        this.mainChart = null;
+        this.main = null;//主体chart生成的view实例
 
         this.slider = null;//slider实例
-        this.kLine = null;//kline图chart实例
+
+        this.kLineChart = null;
+        this.kLine = null;//kline图chart生成的view实例
+
         this.ds = null;//dataSet实例
         this.dv = null//dataView实例
 
-        this.kLineData = {}//用于缓存k线数据
-        this.currentKlineDate = null;//记录当前显示的kline 防止异步后kline被修改
+        this.kLineData = {}//用于缓存k线数据 防止重复获取
+        this.currentKlineDate = null;//记录当前显示的kline 防止异步后kline被修改 保存一个日期字符串
 
         this.state = {
-            kLineLoading: true,
-            kLineTip: false
+            kLineLoading: true//载入中loading提示
+            // kLineTip: false
         }
 
 
@@ -64,34 +69,38 @@ class Chart extends Component {
 
 
         //////////////////////////////////////////初始化chart数据配置
-        const mainChart = this.chart = new G2.Chart({
+        const mainChart = this.mainChart = new G2.Chart({
             container: this.chartEl.current,
             forceFit: true,
             height: 400,
             padding: [30, 100]
         });
+        //生成一个view
         const main = this.main = mainChart.view({
             start: { x: 0, y: 0 },
             end: { x: 1, y: 1 }
         })
 
-        mainChart.on('tooltip:change', ev => {//注册tooltip事件 动态改变kLine data
-            const date = ev.items[0].point._origin.releaseDate;
 
-            this.getkLineData(date);
+        //绑定tooltip事件 动态改变kLine data    
+        mainChart.on('tooltip:change', ev => {
+            const date = ev.items[0].point._origin.releaseDate;
+            this.kLineChangeData(date);
         });
 
-        main.source([]);//导入一个空数据
+
+        //导入一个空数据 异步的数据作为setData形式导入即可
+        main.source([]);
 
         main.axis('EPSForecast', false);//不显示EPSForecast数据坐标
         main.axis('revenueForecast', false);//不显示revenueForecast数据坐标
-        main.tooltip('预计每股收益*每股收益')
+        main.tooltip('预计每股收益*每股收益');//
 
         main.interval().position('releaseDateTimestamp*EPS').color('#3399CC').shape('eps')
         main.interval().position('releaseDateTimestamp*EPSForecast').color('rgba(0,0,0,.65)').shape('epsForecast')
+
         main.interval().position('releaseDateTimestamp*revenue').color('red').shape('revenueShape')
         main.interval().position('releaseDateTimestamp*revenueForecast').color('rgba(0,0,0,.65)').shape('revenueForcast')
-
 
         mainChart.render();//渲染
 
@@ -127,23 +136,30 @@ class Chart extends Component {
 
 
         ////////////////////////////////////////////////////////////////初始化k线图chart
-        const kLineChart = new G2.Chart({
+        const kLineChart = this.kLineChart = new G2.Chart({
             container: this.kLineEl.current,
             forceFit: true,
             height: 300,
             padding: [60, 100]
         });
 
+
+
+
+        //设置tooltip形式为rect
         kLineChart.tooltip({
             crosshairs: {
                 type: 'rect',
             }
 
         });
+
+        //kLine view实例
         const kLine = this.kLine = kLineChart.view({
             start: { x: 0, y: 0 },
             end: { x: 1, y: 1 }
         })
+        //配置data属性
         kLine.scale({
             open: {
                 alias: '开盘'
@@ -165,38 +181,31 @@ class Chart extends Component {
                 mask: 'YY年MM月DD日'
             }
         })
+        //导入空数据 异步数据作为setData导入
         kLine.source([]);
+        //配置数据轴
         kLine.schema().position('date*range').shape('candle').tooltip('open*high*low*price*change').color('trend', function (val) {
             if (val === '上涨') {
                 return '#f04864';
             }
-
             if (val === '下跌') {
                 return '#2fc25b';
             }
         })
 
-
+        //渲染
         kLineChart.render();
     }
-    shouldComponentUpdate(nextProps, nextState) {
-        if (nextProps !== this.props) {
-            this.init(nextProps.data);
-        }
-        if (nextState === this.state) {
-            return false;
-        } else {
-            return true;
-        }
-    }
 
 
-    init(data) {
-        const d = [...data].reverse();//倒置数组 使时间轴变更为从小到大 为正常显示table不修改原数据
 
+    componentWillReceiveProps(nextProps) {
+        const d = [...nextProps.data].reverse();//倒置数组 使时间轴变更为从小到大 为正常显示table不修改原数据
+
+        //执行数据预处理 返回range范围
         const range = dataHandle(d);
 
-
+        //设置slider
         this.ds.setState('end', d[d.length - 1].releaseDateTimestamp);//设置起始
 
         this.slider.end = d[d.length - 1].releaseDateTimestamp;//设置slider起始
@@ -209,7 +218,8 @@ class Chart extends Component {
             this.slider.start = d[0].releaseDateTimestamp;
         }
 
-        this.dv.source(d).transform({//设置显示范围过滤条件
+        //设置slider显示范围过滤条件
+        this.dv.source(d).transform({
             type: 'filter',
             callback: obj => {
                 return obj.releaseDateTimestamp <= this.ds.state.end && obj.releaseDateTimestamp >= this.ds.state.start;
@@ -218,7 +228,7 @@ class Chart extends Component {
 
 
 
-        //配置y轴刻度
+        //根据处理后的range配置y轴刻度范围使数据归一化
         this.main.scale({
             EPS: {
                 alias: '每股收益',
@@ -255,93 +265,125 @@ class Chart extends Component {
                 mask: 'YY年MM月DD日'
             }
         })
+
         //导入数据
         this.main.changeData(this.dv);
         this.slider.changeData(d);
 
 
-        this.getkLineData(d[d.length - 1].releaseDate)
+
+
+
+        //主动触发一次获取kline数据  当前财报最后一天作为参数
+        this.kLineChangeData(d[d.length - 1].releaseDate)
     }
 
 
-    getkLineData(date) {
+    kLineChangeData(date) {
+        //标记当前异步的数据date 防止显示错误
         this.currentKlineDate = date;
-        if (this.kLineData.hasOwnProperty(date)) {//有字段
-            if (this.kLineData[date]) {//有字段且存在有效值
-                if (this.kLineData[date].length === 0) {
-                    this.setState({
-                        kLineTip: true
-                    })
-                } else {
-                    this.setState({
-                        kLineTip: false
-                    })
+
+        //当前缓存数据中是否存在此日期数据
+        if (this.kLineData.hasOwnProperty(date)) {//有此字段
+            if (this.kLineData[date]) {//有字段且不为false
+                if (this.kLineData[date].length === 0) {//有数据但是数据为空
+                    this.kLineTipShow(true);
+                } else {//有数据且不为空
+                    this.kLineTipShow(false);
                 }
+
+                //导入数据
                 this.kLine.changeData(this.kLineData[date]);
-
-
-                // this.kLine.guide().region({
-                //     start: [new Date(date).getTime()-(12*60*60*1000), 'min'],
-                //     end: [new Date(date).getTime()+(12*60*60*1000), 'max']
-                // });
-
 
                 return;
             } else {//有字段 无有效值 等待接口回调
                 return;
             }
-        } else {//无字段 发送请求
+        } else {//无字段则发送请求
             this.kLineData[date] = undefined;//建立字段 作为已发送api标记 避免重复请求
-            const dateFrom = moment(date, 'YYYY-MM-DD').subtract(9, 'days').format('YYYY-MM-DD')
-            const dateTo = moment(date, 'YYYY-MM-DD').add(9, 'days').format('YYYY-MM-DD')
-            this.setState({
-                kLineLoading: true
-            })
-            this.$api.historicalData(this.props.pairId, dateFrom, dateTo).then(d => {
-                this.setState({
-                    kLineLoading: false
-                })
-                if (d.data.code !== 0) {
-                    return;
-                }
-                d = d.data.data;
 
 
+            this.getkLineData(date);
 
-
-
-                d.forEach(function (item) {
-                    item.date = new Date(item.date).getTime();
-                    item.range = [item.open, item.price, item.high, item.low]
-                    item.trend = item.change >= 0 ? '上涨' : '下跌'
-                    item.change = `${item.change}%`
-                })
-                if (d.length > 0 && d.length < 15) {
-                    do {
-                        d.push({
-                            date: new Date(d[d.length-1].date+(24*60*60*1000)).getTime()
-                        });
-                        if (d.length === 15) {
-                            break;
-                        }
-                    } while (true);
-                }
-
-
-                this.kLineData[date] = d;
-
-
-                if (this.currentKlineDate === date) {
-                    this.kLine.changeData(d)
-                    if (d.length === 0) {
-                        this.setState({
-                            kLineTip: true
-                        })
-                    }
-                }
-            })
         }
     }
+
+    //获取kline数据
+    getkLineData(date) {
+        const dateFrom = moment(date, 'YYYY-MM-DD').subtract(9, 'days').format('YYYY-MM-DD')
+        const dateTo = moment(date, 'YYYY-MM-DD').add(9, 'days').format('YYYY-MM-DD')
+        //开启loading
+        this.setState({
+            kLineLoading: true
+        })
+        //发送请求
+        this.$api.historicalData(this.props.pairId, dateFrom, dateTo).then(d => {
+            //关闭loading
+            this.setState({
+                kLineLoading: false
+            })
+            if (d.data.code !== 0) {
+                return;
+            }
+            d = d.data.data;
+            //数据处理
+            d.forEach(function (item) {
+                item.date = new Date(item.date).getTime();
+                item.range = [item.open, item.price, item.high, item.low]
+                item.trend = item.change >= 0 ? '上涨' : '下跌'
+                item.change = `${item.change}%`
+            })
+
+            const minDateNum = 15;
+            if (d.length > 0 && d.length < minDateNum) {
+                do {
+                    d.push({
+                        date: new Date(d[d.length - 1].date + (24 * 60 * 60 * 1000)).getTime()
+                    });
+                    if (d.length === minDateNum) {
+                        break;
+                    }
+                } while (true);
+            }
+
+            //缓存数据
+            this.kLineData[date] = d;
+
+
+            //部署标注 标注会在下一次changeData或render时显示出来
+            const currentDatePointTimeStamp = new Date(date).getTime();
+            this.kLine.guide().text({
+                position: [currentDatePointTimeStamp, 'max'],
+                content: '财报日',
+                style: {
+                    fill: 'rgba(0,0,0,0.3)',
+                    textAlign: 'center',
+                    fontSize: 12
+                }
+            });
+            this.kLine.guide().region({
+                start: [currentDatePointTimeStamp - (24 * 60 * 60 * 1000), 'min'],
+                end: [currentDatePointTimeStamp + (24 * 60 * 60 * 1000), 'max']
+            });
+
+            this.kLineChangeData(this.currentKlineDate);
+
+        })
+    }
+
+
+
+
+
+
+    kLineTipShow(bool) {
+        if (bool) {
+            this.kLineTipEl.current.style.display = 'block';
+        } else {
+            this.kLineTipEl.current.style.display = 'none';
+        }
+    }
+
 
 
 
@@ -357,11 +399,7 @@ class Chart extends Component {
                 <div ref={this.sliderEl}></div>
                 <Spin size="large" spinning={this.state.kLineLoading}>
                     <div ref={this.kLineEl}></div>
-                    {
-                        this.state.kLineTip ? (
-                            <div className={`${s.kLineTip} fontTint`}>no data</div>
-                        ) : false
-                    }
+                    <div ref={this.kLineTipEl} className={`${s.kLineTip} fontTint`}>无历史数据</div>
                 </Spin>
             </div>
         )
@@ -369,7 +407,9 @@ class Chart extends Component {
 }
 
 
-
+//数据处理函数
+//目的是将每股收益与预期收益数据轴归一化 使数据更具有可视化   
+//
 function dataHandle(d) {
     const range = {//储存数据范围
         EPS: [0, 0],//[最小值,最大值]

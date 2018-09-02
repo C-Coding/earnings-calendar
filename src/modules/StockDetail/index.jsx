@@ -100,7 +100,6 @@ class StockDetail extends PureComponent {
 
                 <Chart data={this.state.data} pairId={this.props.pairId} />
 
-
                 <Table className={s.table} size="small" rowKey='releaseDate' dataSource={this.state.data} columns={TableCols} />
             </Spin>
         )
