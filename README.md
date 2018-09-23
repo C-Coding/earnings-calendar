@@ -1,5 +1,7 @@
 # 财报日历
 
+由于爬虫服务器ip被禁，此项目暂停维护
+
 > [https://c-coding.github.io/earnings-calendar/](https://c-coding.github.io/earnings-calendar/)
 
 
